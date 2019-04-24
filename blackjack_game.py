@@ -55,6 +55,9 @@ class Hand():
 			self.value -= 10
 			self.aces -= 1
 
+	def check_for_blackjack(self):
+		return values[self.cards[0].rank] + values[self.cards[1].rank] == 21
+
 class Chips():
 	def __init__(self):
 		self.total = 100
@@ -167,6 +170,8 @@ def play_again():
 	return True
 
 def main():
+	global playing
+
 	chips = Chips()
 
 	while chips.total > 0:
@@ -181,12 +186,38 @@ def main():
 
 		dealer = Hand()
 		dealer.add_card(deck.deal())
-		dealer.add_card(deck.deal())
+		dealer.add_card(deck.deal())		
 
 		take_bet(chips)
 
 		show_some(player, dealer)
 
+		blackjack = False
+		#make this into a function that takes both the player and dealer as arguments
+		#instead of having it in the main function
+		#minimize repetion like calling show_all four times reduce it to one or two times if possible
+		if player.check_for_blackjack() or dealer.check_for_blackjack():
+			if player.check_for_blackjack():
+				if dealer.check_for_blackjack():
+					show_all(player, dealer)
+					push()
+					print("Both players had a blackjack")
+				else:
+					show_all(player, dealer)
+					player_wins(chips)
+
+			elif dealer.check_for_blackjack():
+				if player.check_for_blackjack():
+					show_all(player, dealer)
+					push()
+					print("Both players had a blackjack")
+				else:
+					show_all(player, dealer)
+					dealer_wins(chips)	
+
+			playing = False
+			blackjack = True
+					
 		while playing:
 			hit_or_stand(deck, player)
 
@@ -197,7 +228,7 @@ def main():
 				show_all(player, dealer)
 				break
 
-		if player.value <= 21:
+		if player.value <= 21 and not blackjack:
 			while dealer.value < 17:
 				hit(deck, dealer)
 
